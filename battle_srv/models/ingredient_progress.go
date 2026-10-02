@@ -822,13 +822,13 @@ func DeleteIngredientProgress(tx *sqlx.Tx, playerId int32, ingredientProgress *I
 			}
 			if latestProgress != nil && latestProgress.MillisToStart != nil && latestProgress.MillisToStart.Int64 > 0 {
 				nowMillis := utils.UnixtimeMilli()
-				updateQBaseStr := fmt.Sprintf("UPDATE %s SET updated_at=?,millis_to_start= CASE WHEN millis_to_start>=? THEN millis_to_start-? ELSE 0 WHERE owner_player_id=? AND player_buildable_binding_id=? AND progress_type=?", TBL_INGREDIENT_PROGRESS)
+				updateQBaseStr := fmt.Sprintf("UPDATE %s SET updated_at=?,millis_to_start= CASE WHEN millis_to_start>=? THEN millis_to_start-? ELSE 0 END WHERE owner_player_id=? AND player_buildable_binding_id=? AND progress_type=?", TBL_INGREDIENT_PROGRESS)
 				updateQ, localUpdateErr := tx.Preparex(updateQBaseStr)
 				if localUpdateErr != nil {
 					Logger.Error("Error occurred during invocation of `DeleteIngredientProgress`#0-1", zap.Error(localUpdateErr))
 					return nil, localUpdateErr
 				}
-				updateResult := updateQ.MustExec(nowMillis, latestProgress.MillisToStart.Int64, playerId, ingredientProgress.PlayerBuildableBindingId, ingredientProgress.ProgressType)
+				updateResult := updateQ.MustExec(nowMillis, latestProgress.MillisToStart.Int64, latestProgress.MillisToStart.Int64, playerId, ingredientProgress.PlayerBuildableBindingId, ingredientProgress.ProgressType)
 				_, localUpdateErr = updateResult.RowsAffected()
 				if localUpdateErr != nil {
 					Logger.Error("Error occurred during invocation of `DeleteIngredientProgress`#0-2", zap.Error(localUpdateErr))
@@ -837,13 +837,13 @@ func DeleteIngredientProgress(tx *sqlx.Tx, playerId int32, ingredientProgress *I
 			}
 		} else {
 			nowMillis := utils.UnixtimeMilli()
-			updateQBaseStr := fmt.Sprintf("UPDATE %s SET updated_at=?,millis_to_start= CASE WHEN millis_to_start>=? THEN millis_to_start-? ELSE millis_to_start WHERE owner_player_id=? AND player_buildable_binding_id=? AND progress_type=?", TBL_INGREDIENT_PROGRESS)
+			updateQBaseStr := fmt.Sprintf("UPDATE %s SET updated_at=?,millis_to_start= CASE WHEN millis_to_start>=? THEN millis_to_start-? ELSE millis_to_start END WHERE owner_player_id=? AND player_buildable_binding_id=? AND progress_type=?", TBL_INGREDIENT_PROGRESS)
 			updateQ, localUpdateErr := tx.Preparex(updateQBaseStr)
 			if localUpdateErr != nil {
 				Logger.Error("Error occurred during invocation of `DeleteIngredientProgress`#0-1", zap.Error(localUpdateErr))
 				return nil, localUpdateErr
 			}
-			updateResult := updateQ.MustExec(nowMillis, ingredientProgress.MillisToStart.Int64, playerId, ingredientProgress.PlayerBuildableBindingId, ingredientProgress.ProgressType)
+			updateResult := updateQ.MustExec(nowMillis, ingredientProgress.MillisToStart.Int64, ingredientProgress.MillisToStart.Int64, playerId, ingredientProgress.PlayerBuildableBindingId, ingredientProgress.ProgressType)
 			_, localUpdateErr = updateResult.RowsAffected()
 			if localUpdateErr != nil {
 				Logger.Error("Error occurred during invocation of `DeleteIngredientProgress`#0-2", zap.Error(localUpdateErr))

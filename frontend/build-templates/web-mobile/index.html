@@ -3,6 +3,50 @@
 <head>
   <meta charset="utf-8">
   <title>Foodie Clans</title>
+  <script>
+  /* DEV-MODE AUTO-LOGIN: skips the login scene by pre-authenticating a test
+   * account against the local backend before the game reads its session.
+   * Disable by removing this <script> block. */
+  (function () {
+    var DEV_ACCOUNT = { phoneCountryCode: "086", phoneNum: "mdd" };
+    var BACKEND = "http://localhost:9992";
+    try {
+      var raw = localStorage.getItem("selfPlayer");
+      var sp = raw ? JSON.parse(raw) : null;
+      if (sp && sp.intAuthToken && sp.expiresAt && sp.expiresAt > Date.now() + 60000) {
+        return; /* already have a live session */
+      }
+      var post = function (url, body) {
+        return fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams(body).toString()
+        }).then(function (r) { return r.json(); });
+      };
+      fetch(BACKEND + "/api/v1/Player/SmsCaptcha/Obtain?phoneCountryCode=" + DEV_ACCOUNT.phoneCountryCode + "&phoneNum=" + DEV_ACCOUNT.phoneNum)
+        .then(function (r) { return r.json(); })
+        .then(function (ob) {
+          if (!ob.smsLoginCaptcha) throw new Error("no captcha, ret=" + ob.ret);
+          return post(BACKEND + "/api/v1/Player/SmsCaptcha/Login", {
+            phoneCountryCode: DEV_ACCOUNT.phoneCountryCode,
+            phoneNum: DEV_ACCOUNT.phoneNum,
+            smsLoginCaptcha: ob.smsLoginCaptcha
+          });
+        })
+        .then(function (lg) {
+          if (!lg.intAuthToken) throw new Error("login failed, ret=" + lg.ret);
+          localStorage.setItem("selfPlayer", JSON.stringify({
+            expiresAt: lg.expiresAt,
+            playerId: lg.playerId,
+            intAuthToken: lg.intAuthToken
+          }));
+          localStorage.setItem("targetPlayerId", String(lg.playerId));
+          location.reload();
+        })
+        .catch(function (e) { console.error("[dev-autologin]", e); });
+    } catch (e) { console.error("[dev-autologin]", e); }
+  })();
+  </script>
 
   <!--http://www.html5rocks.com/en/mobile/mobifying/-->
   <meta name="viewport"

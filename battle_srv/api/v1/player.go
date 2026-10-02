@@ -1444,6 +1444,11 @@ func (p *playerController) TokenAuth(c *gin.Context) {
 }
 
 func (p *playerController) CallLimitController(c *gin.Context) {
+	if nil == storage.RedisManagerIns {
+		// Redis is optional (see README #0): when no Redis instance is
+		// initialized, the "apiCallLimit" rate-limit conf is ignored.
+		return
+	}
 	requestPath := c.Request.URL.Path
 	playerId := int32(c.GetInt(api.PLAYER_ID))
 	configMap := Conf.GlobalConf
