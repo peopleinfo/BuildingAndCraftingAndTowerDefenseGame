@@ -1,6 +1,41 @@
 # 0. Preface
 This repository introduces an intact "building & crafting & tower-defense/siege" game with "remotely persisted profile" as well as "pull-based progress update management". 
 
+## 0.0 Working demo in this fork
+
+This fork ships a **working web demo**: an auto-login patch (dev mode) plus build fixes so that `Login → StageMap → IdleGameMap` runs end-to-end against the Go backend, with the integration suite passing **17/17**.
+
+Quick start (Windows):
+
+```
+### 1. Backend (MySQL 5.7 running locally with schema loaded, see section 1/2.3.1)
+cd battle_srv && ServerEnv=TEST ./server.exe          # or: make run-test
+
+### 2. Frontend (built once with Cocos Creator 2.2.1 CLI)
+CocosCreator.exe --path <proj-root>/frontend --build "platform=web-mobile;debug=true"
+
+### 3. Serve the build and open it
+cd frontend/build/web-mobile && python -m http.server 8898
+# open http://localhost:8898/  — the game auto-logs-in as test account "mdd"
+```
+
+The client skips the login screen by pre-authenticating the test account against
+the local backend (see the `DEV-MODE AUTO-LOGIN` block in
+`frontend/build-templates/web-mobile/index.html`; remove it to restore the
+normal SMS login flow).
+
+Gameplay (auto-login → farm map → building → tower-defense stage select):
+
+| Farm map & HUD | Build menu | Placing a building |
+| --- | --- | --- |
+| ![Farm map](readme-assets/01-game-map.png) | ![Build menu](readme-assets/02-build-menu.png) | ![Placing](readme-assets/03-place-building.png) |
+
+| Building panel | Tower-defense stage select |
+| --- | --- |
+| ![Building panel](readme-assets/05-building-panel.png) | ![Stage selection](readme-assets/04-stage-selection.png) |
+
+## 0.1 Original preface
+
 It supports a wide variety of features as shown in the intro videos listed below, yet not currently integrated into a single entry scene. If you find some features "too hidden to enable", please leave a message in Github issues.
 - https://cdn-testeabc.weazm.com/FDC_NEW_UI_TOWER_ATTACK_AND_HOUSEKEEPER.mp4
 - https://cdn-testeabc.weazm.com/FDC_NEW_UI_TUTORIAL_IAP.MP4
